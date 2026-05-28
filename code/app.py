@@ -1,8 +1,16 @@
 import os
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 # 设置环境变量
-os.environ["HF_ENDPOINT"] = "https://hf-mirror.com"
-os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "120"
+os.environ["HF_HUB_DOWNLOAD_TIMEOUT"] = "300"
 os.environ["PYTORCH_CUDA_ALLOC_CONF"] = "max_split_size_mb:128"
+
+# 检查 ESM-2 模型是否已缓存，已缓存则启用离线模式避免网络请求
+_hf_cache_dir = os.path.expanduser("~/.cache/huggingface/hub")
+_esm_model_name = "facebook/esm2_t6_8M_UR50D"
+if os.path.isdir(os.path.join(_hf_cache_dir, "models--" + _esm_model_name.replace("/", "--"))):
+    os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 import torch
 import numpy as np
@@ -135,7 +143,7 @@ class PredictorApp:
         return result_text, viz_img, f"关键残基定位: {top_res_text}"
 
 # Initialize App
-checkpoint = "/home/SCS2026004/ckf_workspace2/code/checkpoints/best_model_fold1.pth"
+checkpoint = os.path.join(BASE_DIR, "../checkpoints/best_model_fold1.pth")
 app = PredictorApp(checkpoint)
 
 # Build Interface
